@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:api.anthropic.com)",
+      "Bash(gunzip -c webfetch-1776530175804-xjisil.bin)",
+      "Bash(python -m http.server 8080)",
+      "Bash(git config *)",
+      "Bash(gh auth *)",
+      "Bash(git --version)",
+      "Bash(curl --version)"
+    ]
+  }
+}
