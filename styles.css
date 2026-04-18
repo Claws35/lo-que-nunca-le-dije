@@ -19,7 +19,7 @@
 }
 
 * { box-sizing: border-box; }
-html, body, #root { height: 100%; margin: 0; }
+html, body, #root { height: 100%; margin: 0; overflow: hidden; }
 body {
   background: radial-gradient(ellipse at 50% 110%, #1a0e07 0%, #0a0a0a 55%, #060606 100%);
   color: var(--ink);
@@ -27,8 +27,9 @@ body {
   font-size: 15px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
 }
+
+.app { height: 100%; }
 
 ::selection { background: rgba(239, 159, 39, 0.35); color: #fff; }
 
@@ -38,10 +39,12 @@ button {
 }
 
 /* ---------- Screens / app ---------- */
-.app { min-height: 100%; position: relative; }
+.app { position: relative; }
 
 .screen-wrap {
-  min-height: 100vh;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .screen {
