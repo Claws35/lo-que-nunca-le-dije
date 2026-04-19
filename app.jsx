@@ -291,7 +291,7 @@ function LaHoguera({ secrets }) {
       setMobileVisible(true);
       hideTimer = setTimeout(() => {
         setMobileVisible(false);
-        showTimer = setTimeout(cycle, 4000);
+        showTimer = setTimeout(cycle, 3000);
       }, 3000);
     }
 
