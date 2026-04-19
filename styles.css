@@ -438,6 +438,27 @@ button {
   color: var(--ink);
 }
 
+/* Tooltip mobile — sigue la brasa */
+.ember-tooltip-mobile {
+  position: fixed;
+  top: 0; left: 0;
+  z-index: 10;
+  width: 180px;
+  padding: 10px 13px;
+  background: rgba(12, 8, 4, 0.90);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--cat-color);
+  border-radius: 4px;
+  pointer-events: none;
+  box-shadow: 0 0 14px color-mix(in oklch, var(--cat-color) 30%, transparent);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  will-change: transform;
+}
+.ember-tooltip-mobile.visible { opacity: 1; }
+.ember-tooltip-mobile .tip-cat { margin-bottom: 5px; font-size: 9px; }
+.ember-tooltip-mobile .tip-text { font-size: 13px; line-height: 1.4; }
+
 /* ---------- ECOS ---------- */
 .ecos { padding: 100px 24px 80px; display: flex; justify-content: center; }
 .ecos-inner { max-width: 760px; width: 100%; padding: 40px 0; }

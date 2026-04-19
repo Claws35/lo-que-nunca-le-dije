@@ -233,16 +233,38 @@ function Confirmacion({ go, pending }) {
 function LaHoguera({ secrets }) {
   const canvasRef = useRef(null);
   const instRef = useRef(null);
+  const tooltipRef = useRef(null);
   const [filter, setFilter] = useState(null);
   const [hover, setHover] = useState(null);
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
+  const [mobileSecret, setMobileSecret] = useState(null);
+  const [mobileVisible, setMobileVisible] = useState(false);
   const count = useRealtimeCount();
 
+  // Detectar touch real — guardado en ref para no cambiar entre renders
+  const isMobileRef = useRef(
+    window.matchMedia('(hover: none) and (pointer: coarse)').matches
+  );
+  const isMobile = isMobileRef.current;
+
+  // Mueve el tooltip DOM directamente, sin re-render React
+  const onMobilePosition = useCallback((sx, sy) => {
+    const el = tooltipRef.current;
+    if (!el) return;
+    const w = el.offsetWidth  || 180;
+    const h = el.offsetHeight || 60;
+    const x = Math.max(8, Math.min(sx - w / 2, window.innerWidth  - w - 8));
+    const y = Math.max(8, Math.min(sy - h - 18, window.innerHeight - h - 8));
+    el.style.transform = `translate(${x}px, ${y}px)`;
+  }, []);
+
+  // Montar hoguera — hover SIEMPRE activo (desktop y mobile)
   useEffect(() => {
     instRef.current = window.Hoguera.mount(canvasRef.current, {
       mode: 'full',
       getSecrets: () => secrets,
       onHover: (info) => setHover(info),
+      onMobilePosition,
     });
     return () => instRef.current?.dispose();
   }, []);
@@ -250,6 +272,32 @@ function LaHoguera({ secrets }) {
   useEffect(() => {
     instRef.current?.setFilter(filter);
   }, [filter]);
+
+  // Ciclo automático mobile — arranca cuando llegan los secretos
+  useEffect(() => {
+    if (!isMobile || secrets.length === 0) return;
+    const real = secrets.filter(s => s.text);
+    if (real.length === 0) return;
+
+    let idx = Math.floor(Math.random() * real.length);
+    let showTimer, hideTimer;
+
+    function cycle() {
+      const secret = real[idx % real.length];
+      idx = (idx + 1) % real.length;
+      const emberIdx = secrets.findIndex(s => s.id === secret.id);
+      if (emberIdx >= 0) instRef.current?.setMobileEmber(emberIdx);
+      setMobileSecret(secret);
+      setMobileVisible(true);
+      hideTimer = setTimeout(() => {
+        setMobileVisible(false);
+        showTimer = setTimeout(cycle, 4000);
+      }, 3000);
+    }
+
+    showTimer = setTimeout(cycle, 1000);
+    return () => { clearTimeout(showTimer); clearTimeout(hideTimer); };
+  }, [secrets.length]); // re-arranca cuando cargan secretos de Supabase
 
   return (
     <div className="screen hoguera-full"
@@ -263,7 +311,9 @@ function LaHoguera({ secrets }) {
             <div className="full-count">{formatN(count)} <span>brasas</span></div>
           </div>
           <div className="full-top-right">
-            <span className="hint">arrastrá · hacé hover sobre una brasa</span>
+            <span className="hint">
+              {isMobile ? 'arrastrá para girar' : 'arrastrá · hacé hover sobre una brasa'}
+            </span>
           </div>
         </div>
         <div className="full-filters">
@@ -282,6 +332,8 @@ function LaHoguera({ secrets }) {
           ))}
         </div>
       </div>
+
+      {/* Tooltip desktop — sigue el cursor (hover) */}
       {hover && (
         <div
           className="ember-tooltip"
@@ -296,6 +348,21 @@ function LaHoguera({ secrets }) {
             <span>{CATEGORIES[hover.cat].label.toLowerCase()}</span>
           </div>
           <div className="tip-text">{hover.secret.text}</div>
+        </div>
+      )}
+
+      {/* Tooltip mobile — sigue la brasa en 3D */}
+      {isMobile && mobileSecret && (
+        <div
+          ref={tooltipRef}
+          className={`ember-tooltip-mobile ${mobileVisible ? 'visible' : ''}`}
+          style={{ '--cat-color': CATEGORIES[mobileSecret.cat].color }}
+        >
+          <div className="tip-cat">
+            <span className="tip-dot" />
+            <span>{CATEGORIES[mobileSecret.cat].label.toLowerCase()}</span>
+          </div>
+          <div className="tip-text">{mobileSecret.text}</div>
         </div>
       )}
     </div>

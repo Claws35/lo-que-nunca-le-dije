@@ -278,6 +278,10 @@
     let activeFilter = null;
     function setFilter(cat) { activeFilter = cat; }
 
+    // Mobile ember tracking
+    let mobileEmberIdx = -1;
+    function setMobileEmber(idx) { mobileEmberIdx = idx; }
+
     let running = true;
     let autoOrbit = 0;
     let last = performance.now();
@@ -378,6 +382,18 @@
         if (hoveredIdx >= 0) hArr[hoveredIdx] = 1;
       }
 
+      // Mobile ember: project 3D position to screen and report it each frame
+      if (mobileEmberIdx >= 0 && opts.onMobilePosition) {
+        const px = pos[mobileEmberIdx*3];
+        const py = pos[mobileEmberIdx*3+1];
+        const pz = pos[mobileEmberIdx*3+2];
+        const vec = new THREE.Vector3(px, py, pz);
+        vec.project(camera);
+        const sx = ( vec.x * 0.5 + 0.5) * canvas.clientWidth;
+        const sy = (-vec.y * 0.5 + 0.5) * canvas.clientHeight;
+        opts.onMobilePosition(sx, sy);
+      }
+
       // Gentle pulse on base glow
       const pulse = 0.85 + Math.sin(now * 0.0012) * 0.08 + Math.sin(now * 0.0031) * 0.04;
       glow.material.opacity = 0.55 * pulse;
@@ -395,6 +411,7 @@
     // API
     return {
       setFilter,
+      setMobileEmber,
       dispose() {
         running = false;
         ro.disconnect();
